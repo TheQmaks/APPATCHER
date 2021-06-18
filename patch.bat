@@ -13,6 +13,7 @@ START /WAIT resources/xml edit --inplace --append "/manifest/application" --type
 START /WAIT resources/xml edit --inplace --append "/manifest/application" --type attr -n "android:debuggable" -v "true" application/AndroidManifest.xml
 COPY resources\network_security_config.xml application\res\xml >NUL
 START "Packing application" /WAIT java -jar resources/apktool_2.5.0.jar b application
+SET "FILE=application/dist/%~nx1"
 SET "RESULT=%~dpn1-PATCHED.apk"
-START "Signing application" /WAIT java -jar resources/signapk.jar resources/certificate.pem resources/key.pk8 application/dist/app.apk %RESULT%
+START "Signing application" /WAIT java -jar resources/signapk.jar resources/certificate.pem resources/key.pk8 %FILE% %RESULT%
 RMDIR /S /Q application
