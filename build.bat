@@ -4,16 +4,16 @@ SET "ARGUMENTS=b application"
 :RUN
 java -jar resources\apktool_2.6.1.jar %ARGUMENTS% 2>>log.txt
 
-FIND /c "invalid resource directory name" log.txt && (
+FINDSTR /C:"invalid resource directory name" log.txt && (
 	REM https://github.com/iBotPeaches/Apktool/issues/1978
 	
-	SET "ARGUMENTS=--use-aapt2 b application"
+	SET "ARGUMENTS=--use-aapt2 %ARGUMENTS%"
 	
 	DEL /F log.txt
 	GOTO :RUN
 )
 
-FIND /c "attribute android:localeConfig not found" log.txt && (
+FINDSTR /C:"attribute android:localeConfig not found" /C:"No resource identifier found for attribute 'localeConfig'" log.txt && (
 	REM https://github.com/iBotPeaches/Apktool/issues/2756
 	
 	DEL /F application\res\xml\locales_config.xml
