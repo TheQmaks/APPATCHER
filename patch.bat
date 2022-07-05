@@ -19,7 +19,7 @@ REM Checks the existence of the temporary directory of the unpacked application 
 IF EXIST application RMDIR /S /Q application
 
 REM Decoding the application into a temporary directory "application" for subsequent work with its resources using apktool.
-START "Decoding application" /WAIT java -jar resources/apktool_2.6.1.jar d -f %1 -o application
+START "Decoding application" /WAIT java -jar resources\apktool_2.6.1.jar d -f %1 -o application
 
 REM Removes attributes in the manifest, if they exist, to avoid duplication exception during building.
 START /WAIT resources\xml edit --inplace --delete "/manifest/application/@android:networkSecurityConfig" application\AndroidManifest.xml
@@ -30,11 +30,14 @@ START /WAIT resources\xml edit --inplace --append "/manifest/application" --type
 START /WAIT resources\xml edit --inplace --append "/manifest/application" --type attr -n "android:debuggable" -v "true" application\AndroidManifest.xml
 
 REM Moves the prepared network security config to application xml resources directory
+IF NOT EXIST application\res\xml MKDIR application\res\xml
 COPY /Y resources\network_security_config.xml application\res\xml >NUL
 
 REM If a certificate exists in the "certificate" directory, copies it to the application raw resources folder and modifies the network security configuration to add a custom CA.
-FOR %%f IN (.\certificate\*.pem) DO (
-    COPY /Y %%f .\application\res\raw\cert.pem >NUL
+FOR %%f IN (certificate\*.pem) DO (
+    IF NOT EXIST application\res\raw MKDIR application\res\raw
+    
+    COPY /Y %%f application\res\raw\cert.pem >NUL
     START /WAIT resources\xml edit --inplace --subnode "//trust-anchors" --type elem -n "certificates src=\"@raw/cert\"" -v "" application\res\xml\network_security_config.xml
 )
 
@@ -42,8 +45,8 @@ REM Builds the modified application and fixes known bugs that may occur during t
 START "Building application" /WAIT cmd /c build.bat
 
 REM Performing the zipalign process
-SET "FILE=application/dist/%~n1_aligned.apk"
-START "Aligning apk" /WAIT resources\zipalign -p -f -v 4 application/dist/%~nx1 %FILE%
+SET "FILE=application\dist\%~n1_aligned.apk"
+START "Aligning apk" /WAIT resources\zipalign -p -f -v 4 application\dist\%~nx1 %FILE%
 
 REM Signing the application with self-generated certificate
 SET "RESULT=%~dpn1-PATCHED.apk"
