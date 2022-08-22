@@ -2,6 +2,7 @@
 SET "ARGUMENTS=b application"
 
 :RUN
+IF EXIST log.txt DEL /F log.txt
 java -jar resources\apktool_2.6.1.jar %ARGUMENTS% 2>>log.txt
 
 FINDSTR /C:"invalid resource directory name" log.txt && (
@@ -9,7 +10,6 @@ FINDSTR /C:"invalid resource directory name" log.txt && (
 	
 	SET "ARGUMENTS=--use-aapt2 %ARGUMENTS%"
 	
-	DEL /F log.txt
 	GOTO :RUN
 )
 
@@ -19,8 +19,7 @@ FINDSTR /C:"attribute android:localeConfig not found" /C:"No resource identifier
 	DEL /F application\res\xml\locales_config.xml
 	START /WAIT resources\xml edit --inplace --delete "/resources/public[@name='locales_config']" application\res\values\public.xml
 	START /WAIT resources\xml edit --inplace --delete "/manifest/application/@android:localeConfig" application\AndroidManifest.xml
-	
-	DEL /F log.txt
+
 	GOTO :RUN
 )
 
